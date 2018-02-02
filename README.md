@@ -13,8 +13,6 @@ The whole console is included in a .unitypackage file but you can take a look at
 
 ### Default Commands
 
-Dillinger is currently extended with the following plugins. Instructions on how to use them in your own application are linked below.
-
 | Command | Action |
 | ------- | ------ |
 | help | Displays a list of ALL the available commands |
