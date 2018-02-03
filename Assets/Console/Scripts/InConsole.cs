@@ -105,7 +105,7 @@ public class InConsole : MonoBehaviour {
 			hasSubCmd = false;
 			input = command.Split(new char[]{' '});
 			baseCommand = input[0];
-			arguments = (input.Length == 1)?"":input.Join(" ",0);
+			arguments = (input.Length == 1)?"":input.Join(" ",1);
 
 		}else{
 			hasSubCmd = true;
@@ -123,7 +123,7 @@ public class InConsole : MonoBehaviour {
 				if(arguments != ""){
 					string[] argumentArray = arguments.Split(new char[]{' '});
 					string subCmd = argumentArray[0];
-					string subArguments = (argumentArray.Length == 1)?"":argumentArray.Join(" ",0);
+					string subArguments = (argumentArray.Length == 1)?"":argumentArray.Join(" ",1);
 
 
 					string parentCmd;
@@ -185,7 +185,6 @@ public class InConsole : MonoBehaviour {
 
 	#region InternalCommands
 	public void ConsolePrint(string text,string command){
-		Log(command,InType.None);
 		if(text == ""){
 			Log("Nothing to print.",InType.Error);
 		}else{
@@ -219,6 +218,8 @@ public class InConsole : MonoBehaviour {
             string[] attributes = arguments.Split(new char[]{' '});
             string mainAttribute = attributes[0];
             string value = (attributes.Length == 1)?"":attributes[1];
+			LogSimple("Base command => " + command);
+			LogSimple("Arguments => " + arguments);
 
             switch(mainAttribute){
                 case "max":{
