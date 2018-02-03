@@ -11,6 +11,10 @@ InConsole is an in-game console that you can use to debug your code or even inpu
 
 The whole console is included in a .unitypackage file but you can take a look at the code yourself.
 
+### Displaying Text To Console
+
+You can display text to the console using InConsole.Log(). There are different methods for displaying Error,Warning and Simple messages. 
+
 ### Default Commands
 
 | Command | Action |
