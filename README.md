@@ -5,7 +5,7 @@ InConsole is an in-game console that you can use to debug your code or even inpu
   - Debug your code
   - Register your own commands
   - Drag n' drop console prefab
-  - Design you own console if you want
+  - Design your own console if you want
  
 ### Installation
 
