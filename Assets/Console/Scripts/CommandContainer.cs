@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class CommandContainer : MonoBehaviour {
 
+    ///
+    /// THIS IS A TEMPLATE SCRIPT TO SHOW YOU HOW YOU WOULD REGISTER AND CREATE COMMANDS. YOU CAN REGISTER A COMMAND THROUGH ANY SCRIPT AS LONG AS THE REGISTERCOMMAND
+    /// FUNCTION GET CALLED. YOU CAN DELETE THIS SCRIPT IF YOU NEED TO.
+    ///
+
 	private InConsole console;
 
     private void Awake() {
@@ -39,6 +44,4 @@ public class CommandContainer : MonoBehaviour {
             InConsole.Log("Could not find that gameobject.",InConsole.InType.Error);
         }
     }
-
-
 }
