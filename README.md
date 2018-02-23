@@ -26,15 +26,18 @@ You can display text to the console using InConsole.Log(). There are different m
 
 ### Registering Commands
 
-The function to be executed when creating a new command needs two strings as parameters -input parameters and the whole ipnut-
+The function to be executed when creating a new command needs two strings as parameters -input arguments and the whole ipnut-
+
+The arguments array returns everything after the command. 
+E.g. - "baseCommand.subCommand arg1 arg2 arg2 argN"
 
 Example:
 ```
-public void CommandFunction(string parameters,string command){
+public void CommandFunction(string[] arguments,string command){
     //Do stuff here
 }
 
-public void SubCommandFunction(string parameters,string command){
+public void SubCommandFunction(string[] arguments,string command){
     //Do stuff here
 }
 ```
