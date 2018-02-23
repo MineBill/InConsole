@@ -8,7 +8,13 @@ public class InConsole : MonoBehaviour {
 	
 	public static InConsole instance;
 
+    /// <summary>
+    /// Returns whether or not the console is active or not
+    /// </summary>
+    public static bool isOpen;
+
 	public string consoleWindowName;
+    public KeyCode hotkey = KeyCode.F1;
 	public Text container;
 
 
@@ -20,10 +26,23 @@ public class InConsole : MonoBehaviour {
 	private Dictionary<string,string> kidParentPair = new Dictionary<string,string>();
 	private Dictionary<string,CommandFunction> subCommands = new Dictionary<string, CommandFunction>();
 
+    private GameObject parent;
+    private InputField inputField;
+
 	public int GetMaxLength{get{return maxLogLength;}}
 
 	private void Awake() {
-		instance = this;
+        parent = transform.GetChild(0).gameObject;
+        inputField = parent.transform.Find("InputPanel").Find("InputField").GetComponent<InputField>();
+        parent.SetActive(false);
+        if(instance != null)
+        {
+            LogError("Another InConsole is active but did not get the instance.");
+        }
+        else
+        {
+            instance = this;
+        }
 		if(container == null){
 			container = GameObject.Find("Container").GetComponent<Text>();
 		}
@@ -35,6 +54,21 @@ public class InConsole : MonoBehaviour {
 		RegisterSubCommand("log","clear",ClearLog);
 		RegisterSubCommand("log","length",LogLength);
 	}
+
+    private void Update()
+    {
+        isOpen = parent.active;
+        if (UnityEngine.Input.GetKeyDown(hotkey))
+        {
+            parent.SetActive(!parent.active);
+            inputField.Select();
+            if (!inputField.isFocused)
+            {
+                inputField.Select();
+                inputField.ActivateInputField();
+            }
+        }
+    }
 
 	#region StaticMethods
 	///Use this function to display a message to the console
@@ -80,7 +114,7 @@ public class InConsole : MonoBehaviour {
 
 	#region Command Registering
 
-	public delegate void CommandFunction(string wholeParameters,string wholeCommand);
+	public delegate void CommandFunction(string[] wholeParameters,string wholeCommand);
 
 	///This registers a new command to the console.If it's just a base command for sub commands then create an Empty function for it.
 	public void RegisterCommand(string command,CommandFunction function){
@@ -92,10 +126,15 @@ public class InConsole : MonoBehaviour {
 		kidParentPair.Add(subCommand,parentCommand);
 		subCommands.Add(subCommand,function);
 	}
-	#endregion
-	
-	#region InputAndListCreating
-	public void Input(string command){
+    #endregion
+
+    #region InputAndListCreating
+    public void Input(string command) {
+        if (command == "" || command == null)
+        {
+            return;
+        }
+
 		string[] input = command.Split(new char[]{'.'});
 		string baseCommand;
 		string arguments;
@@ -105,7 +144,7 @@ public class InConsole : MonoBehaviour {
 			hasSubCmd = false;
 			input = command.Split(new char[]{' '});
 			baseCommand = input[0];
-			arguments = (input.Length == 1)?"":input.Join(" ",1);
+			arguments = (input.Length == 1)?"":input.Join(" ",0);
 
 		}else{
 			hasSubCmd = true;
@@ -118,14 +157,15 @@ public class InConsole : MonoBehaviour {
 		CommandFunction cmdToRun;
 		if(baseCommands.TryGetValue(baseCommand,out cmdToRun)){
 			if(!hasSubCmd){
-				cmdToRun(arguments,command);
+                string[] arr = arguments.Split(new char[] { ' ' });
+				cmdToRun(arr,command);
 			}else{
 				if(arguments != ""){
 					string[] argumentArray = arguments.Split(new char[]{' '});
 					string subCmd = argumentArray[0];
-					string subArguments = (argumentArray.Length == 1)?"":argumentArray.Join(" ",1);
-
-
+                    string[] subArguments = 
+                        (argumentArray.Length == 1) ? null : argumentArray.Join(" ", 1).Split(new char[] { ' '});
+                    
 					string parentCmd;
 					if(kidParentPair.TryGetValue(subCmd,out parentCmd)){
 						if(parentCmd == baseCommand){
@@ -142,7 +182,7 @@ public class InConsole : MonoBehaviour {
 				}
 			}
 		}else{
-			LogError(string.Format("Command '{0}' could not be found. Use 'help' for help.",command));
+			LogError(string.Format("Command '{0}' could not be found. Use 'help' for help.",baseCommand));
 		}
 	}
 
@@ -184,20 +224,20 @@ public class InConsole : MonoBehaviour {
 	#endregion
 
 	#region InternalCommands
-	public void ConsolePrint(string text,string command){
-		if(text == ""){
+	public void ConsolePrint(string[] text,string command){
+		if(text.Length == 0){
 			Log("Nothing to print.",InType.Error);
 		}else{
-			Log(text,InType.Log);
+			Log(text.Join(" ",1),InType.Log);
 		}
 	}
 
-    public void ClearLog(string parameters,string command){
+    public void ClearLog(string[] parameters,string command){
 		container.text = "Logger(experimental), 'help' for help ";
 		consoleListings.Clear();
 	}
 
-    public void Help(string parameters,string command){
+    public void Help(string[] parameters,string command){
         Log("Available commands:",InType.Log);
         foreach (KeyValuePair<string,InConsole.CommandFunction> item in baseCommands)
         {
@@ -211,15 +251,12 @@ public class InConsole : MonoBehaviour {
         }
     }
 
-	public void LogLength(string arguments,string command){
-        if(arguments == ""){
-            Log(container.text.Length.ToString(),InType.Log);
+	public void LogLength(string[] arguments,string command){
+        if(arguments == null){
+            Log("Displayed text length: " + container.text.Length.ToString(),InType.Log);
         }else{
-            string[] attributes = arguments.Split(new char[]{' '});
-            string mainAttribute = attributes[0];
-            string value = (attributes.Length == 1)?"":attributes[1];
-			LogSimple("Base command => " + command);
-			LogSimple("Arguments => " + arguments);
+            string mainAttribute = arguments[0];
+            string value = (arguments.Length == 1)?"": arguments[1];
 
             switch(mainAttribute){
                 case "max":{
@@ -235,8 +272,8 @@ public class InConsole : MonoBehaviour {
         }
     }
 
-	public void Empty(string x1,string x2){
-		ConsolePrint("Empty command",x2);
+	public void Empty(string[] x1,string x2){
+		ConsolePrint(new string[] { "Empty command" }, x2);
 	}
 	#endregion
 
@@ -257,6 +294,10 @@ public static class Extensions{
 	public static string Join(this string[] array,string joint,int startIndex){
 		string output = "";
 		bool done = false;
+        if(startIndex > array.Length)
+        {
+            return null;
+        }
 		for (int i = startIndex; i < array.Length; i++)
 		{
 			if(!done){
@@ -268,4 +309,15 @@ public static class Extensions{
 		}
 		return output;
 	}
+
+    public static string[] SplitWithOffset(this string input,char[] spliter,int offset)
+    {
+        string[] array = input.Split(spliter);
+        string output = "";
+        for (int i = offset; i < array.Length; i++)
+        {
+            output += array[i] + spliter;
+        }
+        return output.Split(spliter);
+    }
 }
